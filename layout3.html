@@ -27,19 +27,33 @@
 	
 	const Layout = ({layout, params}) => {
 		
-		const concat = (params, ...fns) => fns.reduce( (carry, fn) => {
-																		if (fn){
+		const concat = (params, ...fns) => fns.reduce( (carry, f) => {
+																		let p = f.indexOf('/')
+																		let has_child = (p < 0)
+																		let end_child = (p == 0)
+																		let no_child = (p > 0)
+																		
+																		if (end_child) {
+																		
+																			let fn = window[ f.substring(1).trim() ]
+																			let node = fn(params)
+																			carry.push( {...node, key:carry.length } )
+																			//return React.createElement(fn, {...params, key:carry.length}, carry)
+																		}
+
+																		if (no_child){
+																		  let fn = window[ f.substring(0, p).trim() ]
 																		  let node = fn(params)
 																	   	  carry.push( {...node, key:carry.length } )
+																		
 																		}
 																		return carry
+																		
 																	}, [])
 	 
 		const all_fns = [ ...layout.matchAll(/\<(.*?)\>/gm) ]
 							.map( x => x[1] )
-							.filter( x => x.indexOf('/')!=0 )
-							.map( x => x.substring( 0, x.indexOf(' ')) )
-							.map( fn => window[fn] )
+							
  
 		return concat(params, ...all_fns)
 	 
